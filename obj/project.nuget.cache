@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "x9Ho8F/xo3w=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Ced\\source\\repos\\C#\\M3UToolkit\\M3UToolkit.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Ced\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.21\\microsoft.net.illink.tasks.8.0.21.nupkg.sha512"
+  ],
+  "logs": []
+}

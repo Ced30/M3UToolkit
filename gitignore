@@ -1,0 +1,47 @@
+# Build directories
+bin/
+obj/
+
+# Visual Studio files
+*.user
+*.suo
+*.vssscc
+*.vspscc
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+
+# Visual Studio Code settings
+.vscode/
+
+# Rider IDE
+.idea/
+
+# Resharper files
+_ReSharper*/
+
+# NuGet packages
+*.nupkg
+packages/
+
+# Windows files
+Thumbs.db
+desktop.ini
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+*.swp
+
+# Publish output
+publish/
+*.deploy
+
+# Others
+*.dbmdl
+*.jfm

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36623.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M3UToolkit", "M3UToolkit.csproj", "{7A1F6A77-122B-488E-BA45-8B7EF909507B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7A1F6A77-122B-488E-BA45-8B7EF909507B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A1F6A77-122B-488E-BA45-8B7EF909507B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A1F6A77-122B-488E-BA45-8B7EF909507B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A1F6A77-122B-488E-BA45-8B7EF909507B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13F9C1DC-8F1B-4B69-80A7-269D3BEBB45F}
+	EndGlobalSection
+EndGlobal
