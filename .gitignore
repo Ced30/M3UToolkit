@@ -12,6 +12,9 @@ obj/
 *.opensdf
 *.VC.db
 
+# Visual Studio cache directory
+.vs/
+
 # Visual Studio Code settings
 .vscode/
 
