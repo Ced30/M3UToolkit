@@ -60,4 +60,10 @@ Ce projet est sous licence GNU General Public License v3 (GPLv3).
 Vous êtes libre d’utiliser, modifier et distribuer ce logiciel selon les termes de la GPLv3.
 Voir le fichier LICENSE pour plus de détails.
 
+# In Use:
+
+![Main UI Screenshot](Images/Usage.jpg)
+
+
 Développé par @Ced30
+
