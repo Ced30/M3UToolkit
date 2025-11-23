@@ -1,25 +1,38 @@
-﻿namespace M3UToolkit
-{
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
+namespace M3UToolkit
+{
+    /// <summary>
+    /// Main form for managing M3U playlists.
+    /// Provides UI for adding, removing, reordering files, setting output folder,
+    /// and generating M3U playlists with optional file renaming.
+    /// </summary>
     public partial class MainForm : Form
     {
         private int indexOfItemUnderMouseToDrag;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainForm"/> class.
+        /// Sets up event handlers for buttons and drag-and-drop functionality.
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
 
-            // Drag & Drop externe
             lstFiles.AllowDrop = true;
             lstFiles.DragEnter += LstFiles_DragEnter;
             lstFiles.DragDrop += LstFiles_DragDrop;
 
-            // Drag & Drop interne (r�organisation)
             lstFiles.MouseDown += LstFiles_MouseDown;
             lstFiles.DragOver += LstFiles_DragOver;
             lstFiles.DragDrop += LstFiles_DragDropInternal;
 
-            // Boutons
             btnAdd.Click += BtnAdd_Click;
             btnRemove.Click += BtnRemove_Click;
             btnClear.Click += BtnClear_Click;
@@ -29,7 +42,10 @@
             btnGenerate.Click += BtnGenerate_Click;
         }
 
-        // ====================== Validation ======================
+        /// <summary>
+        /// Validates user inputs: file list, output folder, and optional naming.
+        /// </summary>
+        /// <returns>True if all inputs are valid; otherwise, false.</returns>
         private bool ValidateInputs()
         {
             if (lstFiles.Items.Count == 0)
@@ -38,7 +54,6 @@
                 return false;
             }
 
-            // Valider le nom uniquement si le renommage est activé
             if (chkUseAutoNaming.Checked && string.IsNullOrWhiteSpace(txtGameName.Text))
             {
                 MessageBox.Show("Please enter a name for the renamed files.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -54,242 +69,250 @@
             return true;
         }
 
-        // ====================== Buttons ======================
-        private void BtnAdd_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog ofd = new OpenFileDialog())
-            {
-                ofd.Multiselect = true;
-                ofd.Title = "Select files";
+        #region Button Event Handlers
 
-                if (ofd.ShowDialog() == DialogResult.OK)
+            private void BtnAdd_Click(object sender, EventArgs e)
+            {
+                using (OpenFileDialog ofd = new OpenFileDialog())
                 {
-                    foreach (var file in ofd.FileNames)
+                    ofd.Multiselect = true;
+                    ofd.Title = "Select files";
+
+                    if (ofd.ShowDialog() == DialogResult.OK)
                     {
-                        if (!lstFiles.Items.Contains(file))
-                            lstFiles.Items.Add(file);
+                        foreach (var file in ofd.FileNames)
+                            if (!lstFiles.Items.Contains(file))
+                                lstFiles.Items.Add(file);
                     }
                 }
             }
-        }
 
-        private void BtnRemove_Click(object sender, EventArgs e)
-        {
-            if (lstFiles.SelectedItem != null)
-                lstFiles.Items.Remove(lstFiles.SelectedItem);
-        }
-
-        private void BtnClear_Click(object sender, EventArgs e)
-        {
-            lstFiles.Items.Clear();
-        }
-
-        private void BtnMoveUp_Click(object sender, EventArgs e)
-        {
-            int index = lstFiles.SelectedIndex;
-            if (index > 0)
+            private void BtnRemove_Click(object sender, EventArgs e)
             {
-                var item = lstFiles.Items[index];
-                lstFiles.Items.RemoveAt(index);
-                lstFiles.Items.Insert(index - 1, item);
-                lstFiles.SelectedIndex = index - 1;
+                if (lstFiles.SelectedItem != null)
+                    lstFiles.Items.Remove(lstFiles.SelectedItem);
             }
-        }
 
-        private void BtnMoveDown_Click(object sender, EventArgs e)
-        {
-            int index = lstFiles.SelectedIndex;
-            if (index >= 0 && index < lstFiles.Items.Count - 1)
+            private void BtnClear_Click(object sender, EventArgs e)
             {
-                var item = lstFiles.Items[index];
-                lstFiles.Items.RemoveAt(index);
-                lstFiles.Items.Insert(index + 1, item);
-                lstFiles.SelectedIndex = index + 1;
-            }
-        }
-
-        private void BtnBrowse_Click(object sender, EventArgs e)
-        {
-            using (var fbd = new FolderBrowserDialog())
-            {
-                if (fbd.ShowDialog() == DialogResult.OK)
-                    txtOutputFolder.Text = fbd.SelectedPath;
-            }
-        }
-
-        private async void BtnGenerate_Click(object sender, EventArgs e)
-        {
-            if (!ValidateInputs())
-                return;
-
-            if (!RemoveMissingFiles())
-                return; // arr�ter la g�n�ration si des fichiers manquants ont �t� d�tect�s
-
-            btnGenerate.Enabled = false;
-            progressBar.Value = 0;
-
-            try
-            {
-                await GenerateAsync();
-                MessageBox.Show("Done! files copied and .m3u generated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // D�lister tous les fichiers apr�s g�n�ration
                 lstFiles.Items.Clear();
             }
-            catch (Exception ex)
+
+            private void BtnMoveUp_Click(object sender, EventArgs e)
             {
-                MessageBox.Show($"An error occurred:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                btnGenerate.Enabled = true;
-            }
-        }
-
-        // ====================== Generation ======================
-        private async Task GenerateAsync()
-        {
-            string outputFolder = txtOutputFolder.Text.Trim();
-            bool renameFiles = chkUseAutoNaming.Checked;
-            string gameName = txtGameName.Text.Trim();
-
-            // Si pas de renommage, on met un nom par défaut pour le M3U
-            if (!renameFiles)
-                gameName = string.IsNullOrEmpty(gameName) ? "Playlist" : gameName;
-
-            string affixType = (cmbAffixType.SelectedItem?.ToString() ?? "").Trim();
-            if (affixType.Equals("None", StringComparison.OrdinalIgnoreCase))
-                affixType = ""; // Aucun affixe
-
-            int totalFiles = lstFiles.Items.Count;
-
-            // Reset progress bars
-            progressBar.Maximum = totalFiles;
-            progressBar.Value = 0;
-            progressBarFile.Maximum = 100;
-            progressBarFile.Value = 0;
-
-            List<string> m3uEntries = new List<string>();
-
-            for (int i = 0; i < totalFiles; i++)
-            {
-                string sourcePath = lstFiles.Items[i].ToString();
-                string extension = Path.GetExtension(sourcePath);
-                string destPath;
-
-                if (renameFiles)
+                int index = lstFiles.SelectedIndex;
+                if (index > 0)
                 {
-                    string innerText = string.IsNullOrEmpty(affixType)
-                        ? $"{i + 1} of {totalFiles}"
-                        : $"{affixType} {i + 1} of {totalFiles}";
+                    var item = lstFiles.Items[index];
+                    lstFiles.Items.RemoveAt(index);
+                    lstFiles.Items.Insert(index - 1, item);
+                    lstFiles.SelectedIndex = index - 1;
+                }
+            }
 
-                    string destName = $"{gameName} ({innerText}){extension}";
-                    destPath = Path.Combine(outputFolder, destName);
+            private void BtnMoveDown_Click(object sender, EventArgs e)
+            {
+                int index = lstFiles.SelectedIndex;
+                if (index >= 0 && index < lstFiles.Items.Count - 1)
+                {
+                    var item = lstFiles.Items[index];
+                    lstFiles.Items.RemoveAt(index);
+                    lstFiles.Items.Insert(index + 1, item);
+                    lstFiles.SelectedIndex = index + 1;
+                }
+            }
 
-                    // Copie du fichier avec mise à jour de la barre de progression
-                    using (FileStream source = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
-                    using (FileStream target = new FileStream(destPath, FileMode.Create, FileAccess.Write))
+            private void BtnBrowse_Click(object sender, EventArgs e)
+            {
+                using (var fbd = new FolderBrowserDialog())
+                {
+                    if (fbd.ShowDialog() == DialogResult.OK)
+                        txtOutputFolder.Text = fbd.SelectedPath;
+                }
+            }
+
+            private async void BtnGenerate_Click(object sender, EventArgs e)
+            {
+                if (!ValidateInputs()) return;
+                if (!RemoveMissingFiles()) return;
+
+                btnGenerate.Enabled = false;
+                progressBar.Value = 0;
+
+                try
+                {
+                    await GenerateAsync();
+                    MessageBox.Show("Done! files copied and .m3u generated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    lstFiles.Items.Clear();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    btnGenerate.Enabled = true;
+                }
+            }
+
+        #endregion
+
+        #region Generation Logic
+
+            /// <summary>
+            /// Generates the playlist files asynchronously, optionally renaming them and creating a subfolder.
+            /// </summary>
+            /// <returns>A task representing the asynchronous operation.</returns>
+            private async Task GenerateAsync()
+            {
+                string outputFolder = txtOutputFolder.Text.Trim();
+                bool renameFiles = chkUseAutoNaming.Checked;
+                bool createSubfolder = chkCreateSubfolder.Checked;
+                string gameName = txtGameName.Text.Trim();
+
+                if (!renameFiles)
+                    gameName = string.IsNullOrEmpty(gameName) ? "Playlist" : gameName;
+
+                if (createSubfolder)
+                {
+                    outputFolder = Path.Combine(outputFolder, gameName);
+                    if (!Directory.Exists(outputFolder))
+                        Directory.CreateDirectory(outputFolder);
+                }
+
+                string affixType = (cmbAffixType.SelectedItem?.ToString() ?? "").Trim();
+                if (affixType.Equals("None", StringComparison.OrdinalIgnoreCase))
+                    affixType = "";
+
+                int totalFiles = lstFiles.Items.Count;
+
+                progressBar.Maximum = totalFiles;
+                progressBar.Value = 0;
+                progressBarFile.Maximum = 100;
+                progressBarFile.Value = 0;
+
+                List<string> m3uEntries = new List<string>();
+
+                for (int i = 0; i < totalFiles; i++)
+                {
+                    string sourcePath = lstFiles.Items[i].ToString();
+                    string extension = Path.GetExtension(sourcePath);
+                    string destPath;
+
+                    if (renameFiles)
                     {
-                        byte[] buffer = new byte[65536];
-                        long totalBytes = source.Length;
-                        long readTotal = 0;
+                        string innerText = string.IsNullOrEmpty(affixType)
+                            ? $"{i + 1} of {totalFiles}"
+                            : $"{affixType} {i + 1} of {totalFiles}";
 
-                        int read;
-                        while ((read = await source.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        string destName = $"{gameName} ({innerText}){extension}";
+                        destPath = Path.Combine(outputFolder, destName);
+
+                        using (FileStream source = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
+                        using (FileStream target = new FileStream(destPath, FileMode.Create, FileAccess.Write))
                         {
-                            await target.WriteAsync(buffer, 0, read);
-                            readTotal += read;
-                            progressBarFile.Value = (int)((readTotal * 100) / totalBytes);
+                            byte[] buffer = new byte[65536];
+                            long totalBytes = source.Length;
+                            long readTotal = 0;
+
+                            int read;
+                            while ((read = await source.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                            {
+                                await target.WriteAsync(buffer, 0, read);
+                                readTotal += read;
+                                progressBarFile.Value = (int)((readTotal * 100) / totalBytes);
+                            }
                         }
+
+                        m3uEntries.Add(Path.GetFileName(destPath));
+                    }
+                    else
+                    {
+                        m3uEntries.Add(Path.GetFileName(sourcePath));
                     }
 
-                    m3uEntries.Add(Path.GetFileName(destPath));
+                    progressBar.Value = i + 1;
+                    progressBarFile.Value = 0;
                 }
-                else
+
+                string m3uFile = Path.Combine(outputFolder, $"{gameName}.m3u");
+                File.WriteAllLines(m3uFile, m3uEntries);
+            }
+
+            /// <summary>
+            /// Removes missing files from the file list and notifies the user.
+            /// </summary>
+            /// <returns>True if all files exist; otherwise, false.</returns>
+            private bool RemoveMissingFiles()
+            {
+                var missingFiles = lstFiles.Items.Cast<string>().Where(f => !File.Exists(f)).ToList();
+                if (missingFiles.Count > 0)
                 {
-                    // Pas de renommage → on utilise juste le nom du fichier original
-                    m3uEntries.Add(Path.GetFileName(sourcePath));
+                    string msg = "The following files are missing and will be removed from the list:\n\n" +
+                                 string.Join("\n", missingFiles);
+                    MessageBox.Show(msg, "Missing Files", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    foreach (var file in missingFiles)
+                        lstFiles.Items.Remove(file);
+
+                    return false;
                 }
-
-                progressBar.Value = i + 1;
-                progressBarFile.Value = 0; // Reset pour le fichier suivant
+                return true;
             }
 
-            // Écriture du fichier M3U
-            string m3uFile = Path.Combine(outputFolder, $"{gameName}.m3u");
-            File.WriteAllLines(m3uFile, m3uEntries);
-        }
+        #endregion
 
-        private bool RemoveMissingFiles()
-        {
-            var missingFiles = lstFiles.Items.Cast<string>().Where(f => !File.Exists(f)).ToList();
-            if (missingFiles.Count > 0)
+        #region External Drag & Drop
+
+            private void LstFiles_DragEnter(object sender, DragEventArgs e)
             {
-                string msg = "The following files are missing and will be removed from the list:\n\n" +
-                             string.Join("\n", missingFiles);
-                MessageBox.Show(msg, "Missing Files", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                foreach (var file in missingFiles)
-                    lstFiles.Items.Remove(file);
-
-                return false; // indique que des fichiers ont �t� retir�s
+                e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
             }
-            return true; // tous les fichiers existent
-        }
 
-        // ====================== Drag & Drop externe ======================
-        private void LstFiles_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Copy;
-            else
-                e.Effect = DragDropEffects.None;
-        }
-
-        private void LstFiles_DragDrop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
-                return;
-
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files == null) return;
-
-            foreach (var file in files)
+            private void LstFiles_DragDrop(object sender, DragEventArgs e)
             {
-                if (!lstFiles.Items.Contains(file))
-                    lstFiles.Items.Add(file);
+                if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files == null) return;
+
+                foreach (var file in files)
+                    if (!lstFiles.Items.Contains(file))
+                        lstFiles.Items.Add(file);
             }
-        }
 
-        // ====================== Drag & Drop interne ======================
-        private void LstFiles_MouseDown(object sender, MouseEventArgs e)
-        {
-            indexOfItemUnderMouseToDrag = lstFiles.IndexFromPoint(e.X, e.Y);
-            if (indexOfItemUnderMouseToDrag != ListBox.NoMatches)
-                lstFiles.DoDragDrop(lstFiles.Items[indexOfItemUnderMouseToDrag], DragDropEffects.Move);
-        }
+        #endregion
 
-        private void LstFiles_DragOver(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
+        #region Internal Drag & Drop (Reordering)
 
-        private void LstFiles_DragDropInternal(object sender, DragEventArgs e)
-        {
-            object data = e.Data.GetData(typeof(string));
-            if (data == null) return;
+            private void LstFiles_MouseDown(object sender, MouseEventArgs e)
+            {
+                indexOfItemUnderMouseToDrag = lstFiles.IndexFromPoint(e.X, e.Y);
+                if (indexOfItemUnderMouseToDrag != ListBox.NoMatches)
+                    lstFiles.DoDragDrop(lstFiles.Items[indexOfItemUnderMouseToDrag], DragDropEffects.Move);
+            }
 
-            Point point = lstFiles.PointToClient(new Point(e.X, e.Y));
-            int index = lstFiles.IndexFromPoint(point);
+            private void LstFiles_DragOver(object sender, DragEventArgs e)
+            {
+                e.Effect = DragDropEffects.Move;
+            }
 
-            // si rel�ch� en dehors d�un item, mettre � la fin
-            if (index == ListBox.NoMatches)
-                index = lstFiles.Items.Count;
+            private void LstFiles_DragDropInternal(object sender, DragEventArgs e)
+            {
+                object data = e.Data.GetData(typeof(string));
+                if (data == null) return;
 
-            lstFiles.Items.Remove(data);
-            lstFiles.Items.Insert(index, data);
-            lstFiles.SelectedItem = data;
-        }
+                Point point = lstFiles.PointToClient(new Point(e.X, e.Y));
+                int index = lstFiles.IndexFromPoint(point);
+
+                if (index == ListBox.NoMatches)
+                    index = lstFiles.Items.Count;
+
+                lstFiles.Items.Remove(data);
+                lstFiles.Items.Insert(index, data);
+                lstFiles.SelectedItem = data;
+            }
+
+        #endregion
     }
-
 }
