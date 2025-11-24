@@ -1,40 +1,45 @@
 ﻿using M3UToolkit;
 using System.Windows.Forms;
 
-namespace M3UToolkit
-{
-    partial class MainForm : Form
-    {
+namespace M3UToolkit {
+
+    /// <summary>
+    /// Partial class for MainForm that sets up the UI layout and controls.
+    /// Initializes and arranges the main UI groups (FilesGroup, RenameGroup, OutputGroup) within a single TableLayoutPanel.
+    /// Adds a MenuStrip with a Help → About item linked to the AboutForm.
+    /// Configures form properties such as fixed size, title, and menu integration.
+    /// Ensures proper docking, auto-sizing, and scrolling behavior for all contained controls.
+    /// </summary>
+    partial class MainForm : Form {
         private FilesGroup filesGroup;
         private RenameGroup renameGroup;
         private OutputGroup outputGroup;
 
-        public void InitializeComponent()
-        {
+        public void InitializeComponent() {
             this.filesGroup = new FilesGroup();
             this.renameGroup = new RenameGroup();
             this.outputGroup = new OutputGroup();
 
-            // ===== TableLayoutPanel principal =====
-            var tableMain = new TableLayoutPanel
-            {
+            // ===== TableLayoutPanel =====
+            var tableMain = new TableLayoutPanel {
                 Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 3,
-                Padding = new Padding(10)
+                ColumnCount = 1,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(10),
+                AutoScroll = true
             };
-            tableMain.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            tableMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            tableMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableMain.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tableMain.RowStyles.Clear();
 
+            // ===== Groups =====
             tableMain.Controls.Add(filesGroup.Root, 0, 0);
-            tableMain.SetColumnSpan(filesGroup.Root, 2);
+            tableMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
             tableMain.Controls.Add(renameGroup.Root, 0, 1);
-            tableMain.SetColumnSpan(renameGroup.Root, 2);
+            tableMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
             tableMain.Controls.Add(outputGroup.Root, 0, 2);
-            tableMain.SetColumnSpan(outputGroup.Root, 2);
+            tableMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             // ===== MenuStrip =====
             var menuStrip = new MenuStrip();
@@ -47,10 +52,10 @@ namespace M3UToolkit
 
             // ===== Ajout aux Controls =====
             this.Controls.Add(tableMain);
-            this.Controls.Add(menuStrip); // Ajout du MenuStrip
-            this.MainMenuStrip = menuStrip; // Assignation officielle
+            this.Controls.Add(menuStrip);
+            this.MainMenuStrip = menuStrip;
 
-            // ===== Paramètres du formulaire =====
+            // ===== Form parameters =====
             this.Text = "M3UToolkit v1.2.0";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;

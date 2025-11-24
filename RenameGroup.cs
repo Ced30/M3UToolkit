@@ -1,11 +1,15 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
+﻿namespace M3UToolkit {
 
-namespace M3UToolkit
-{
-    internal class RenameGroup
-    {
+    /// <summary>
+    /// Represents the renaming section of the M3UToolkit UI.
+    /// Provides controls to configure playlist and file naming options.
+    /// Contains a GroupBox with a TableLayoutPanel that organizes:
+    /// - A TextBox for entering the playlist name.
+    /// - A ComboBox to select a renaming affix (None, Disc, Track, or File).
+    /// - A CheckBox to enable or disable automatic file renaming, which also toggles the ComboBox.
+    /// The layout is fully docked and properly padded for a clean UI.
+    /// </summary>
+    internal class RenameGroup {
         public Control Root => grpNaming;
 
         public GroupBox grpNaming;
@@ -13,22 +17,18 @@ namespace M3UToolkit
         public ComboBox cmbAffixType;
         public CheckBox chkUseAutoNaming;
 
-        public RenameGroup()
-        {
+        public RenameGroup() {
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            grpNaming = new GroupBox
-            {
-                Text = "Naming Options",
+        private void InitializeComponent() {
+            grpNaming = new GroupBox {
+                //Text = "Naming Options",
                 Dock = DockStyle.Fill,
                 Padding = new Padding(10)
             };
 
-            var layout = new TableLayoutPanel
-            {
+            var layout = new TableLayoutPanel {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
                 RowCount = 2,
@@ -49,8 +49,7 @@ namespace M3UToolkit
             cmbAffixType.Dock = DockStyle.Left;
 
             chkUseAutoNaming = new CheckBox { Text = "Rename Files", Checked = true, AutoSize = true };
-            chkUseAutoNaming.CheckedChanged += (s, e) =>
-            {
+            chkUseAutoNaming.CheckedChanged += (s, e) => {
                 cmbAffixType.Enabled = chkUseAutoNaming.Checked;
             };
 

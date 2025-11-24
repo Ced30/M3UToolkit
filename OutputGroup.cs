@@ -1,11 +1,15 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
+﻿namespace M3UToolkit {
 
-namespace M3UToolkit
-{
-    internal class OutputGroup
-    {
+    /// <summary>
+    /// Represents the output section of the M3UToolkit UI.
+    /// Provides controls for selecting the output folder, displaying progress, and generating the output.
+    /// Contains a GroupBox with a TableLayoutPanel that organizes:
+    /// - A read-only TextBox and a browse Button for the output folder.
+    /// - Two custom ProgressBarWithText controls: one for individual file progress, one for overall progress.
+    /// - A Generate Button to start the output process.
+    /// The layout is fully docked and resizable, with proper padding and column/row arrangements.
+    /// </summary>
+    internal class OutputGroup {
         public Control Root => grpOutput;
 
         public GroupBox grpOutput;
@@ -17,23 +21,19 @@ namespace M3UToolkit
 
         private TableLayoutPanel panelBottom;
 
-        public OutputGroup()
-        {
+        public OutputGroup() {
             InitializeComponent();
         }
 
-        private void InitializeComponent()
-        {
-            grpOutput = new GroupBox
-            {
-                Text = "Output & Progress",
+        private void InitializeComponent() {
+            grpOutput = new GroupBox {
+                //Text = "Output & Progress",
                 Dock = DockStyle.Fill,
                 Padding = new Padding(10),
                 MinimumSize = new Size(0, 180)
             };
 
-            var layout = new TableLayoutPanel
-            {
+            var layout = new TableLayoutPanel {
                 ColumnCount = 2,
                 RowCount = 5,
                 Dock = DockStyle.Fill,
@@ -49,8 +49,7 @@ namespace M3UToolkit
             txtOutputFolder = new TextBox { ReadOnly = true, Height = 25, Dock = DockStyle.Fill };
             btnBrowse = new Button { Text = "...", AutoSize = true };
 
-            panelBottom = new TableLayoutPanel
-            {
+            panelBottom = new TableLayoutPanel {
                 ColumnCount = 2,
                 Dock = DockStyle.Fill,
                 AutoSize = true
