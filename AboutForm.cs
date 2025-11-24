@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace M3UToolkit
 {
-    public class AboutForm : Form
+    internal class AboutForm : Form
     {
         [DllImport("user32.dll")]
         private static extern bool HideCaret(IntPtr hWnd);
