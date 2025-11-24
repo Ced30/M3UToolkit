@@ -1,3 +1,12 @@
+# M3UToolkit – 100 % safe multi-disc .m3u creator
+
+Never touches your original files – works only on copies.
+
+**Free & open-source under GPL-3.0**  
+Want to integrate M3UToolkit in a **commercial / paid** frontend, emulator or distribution without GPL obligations?  
+→ **Commercial license available** (one-time fee).  
+Contact: ced30.dev@proton.me
+
 # English
 
 **M3UToolkit** is a WinForms application to generate `.m3u` playlists and rename files automatically.

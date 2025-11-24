@@ -69,9 +69,19 @@ namespace M3UToolkit
             return true;
         }
 
+        #region About
+
+            private void ButtonAbout_Click(object sender, EventArgs e)
+            {
+                AboutForm about = new AboutForm();
+                about.ShowDialog(); // ouvre la fenêtre modale
+            }
+
+        #endregion
+
         #region Button Event Handlers
 
-            private void BtnAdd_Click(object sender, EventArgs e)
+        private void BtnAdd_Click(object sender, EventArgs e)
             {
                 using (OpenFileDialog ofd = new OpenFileDialog())
                 {

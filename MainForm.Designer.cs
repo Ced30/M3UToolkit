@@ -84,6 +84,15 @@ namespace M3UToolkit
             this.cmbAffixType = new ComboBox();
             this.grpOutput = new GroupBox();
 
+            // ===== MenuStrip =====
+            var menuStrip = new MenuStrip();
+            var menuHelp = new ToolStripMenuItem("Help");
+            var menuAbout = new ToolStripMenuItem("About");
+            menuAbout.Click += new EventHandler(ButtonAbout_Click);
+            menuHelp.DropDownItems.Add(menuAbout);
+            menuStrip.Items.Add(menuHelp);
+            menuStrip.Dock = DockStyle.Top;
+
             this.SuspendLayout();
 
             // ===== TableLayoutPanel main container =====
@@ -122,17 +131,16 @@ namespace M3UToolkit
             btnMoveUp.Text = "↑";
             btnMoveDown.Text = "↓";
 
-            // Checkboxes
             chkUseAutoNaming.Text = "Rename Files";
             chkUseAutoNaming.AutoSize = true;
             chkUseAutoNaming.Checked = true;
-            chkUseAutoNaming.Margin = new Padding(5, btnMoveDown.Height, 0, 5);
+            chkUseAutoNaming.Margin = new Padding(5, btnMoveDown.Height, 0, 0);
             chkUseAutoNaming.CheckedChanged += (s, e) =>
             {
                 cmbAffixType.Enabled = chkUseAutoNaming.Checked;
             };
 
-            chkCreateSubfolder.Text = "Create subfolder for playlist";
+            chkCreateSubfolder.Text = "Create subfolder";
             chkCreateSubfolder.AutoSize = true;
             chkCreateSubfolder.Checked = false;
             chkCreateSubfolder.Margin = new Padding(5, 0, 0, 0);
@@ -160,7 +168,6 @@ namespace M3UToolkit
             namingLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             namingLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            // Playlist name
             var lblName = new Label
             {
                 Text = "Playlist Name:",
@@ -174,7 +181,6 @@ namespace M3UToolkit
             namingLayout.Controls.Add(lblName, 0, 0);
             namingLayout.Controls.Add(txtGameName, 1, 0);
 
-            // Affix dropdown
             var lblDropdown = new Label
             {
                 Text = "Renaming Affix:",
@@ -212,13 +218,11 @@ namespace M3UToolkit
             outputLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             outputLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            // Output folder label
             lblOutputFolder.Text = "Output Folder:";
             lblOutputFolder.AutoSize = true;
             outputLayout.Controls.Add(lblOutputFolder, 0, 0);
             outputLayout.SetColumnSpan(lblOutputFolder, 2);
 
-            // Output folder + browse
             txtOutputFolder.ReadOnly = true;
             txtOutputFolder.Height = 25;
             txtOutputFolder.Dock = DockStyle.Fill;
@@ -240,7 +244,6 @@ namespace M3UToolkit
             outputLayout.Controls.Add(panelBottom, 0, 1);
             outputLayout.SetColumnSpan(panelBottom, 2);
 
-            // Progress bars
             progressBarFile.Minimum = 0;
             progressBarFile.Maximum = 100;
             progressBarFile.Dock = DockStyle.Fill;
@@ -253,7 +256,6 @@ namespace M3UToolkit
             outputLayout.Controls.Add(progressBar, 0, 3);
             outputLayout.SetColumnSpan(progressBar, 2);
 
-            // Generate button
             btnGenerate.Text = "Generate";
             btnGenerate.AutoSize = true;
             btnGenerate.Dock = DockStyle.Fill;
@@ -266,13 +268,20 @@ namespace M3UToolkit
 
             // ===== MainForm settings =====
             this.ClientSize = new Size(700, 580);
+
+            // Add menuStrip **before** tableMain
             this.Controls.Add(tableMain);
-            this.Text = "M3UToolkit";
+            this.Controls.Add(menuStrip);
+
+            this.MainMenuStrip = menuStrip;
+            this.Text = "M3UToolkit v1.1.0";
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
             this.ResumeLayout(false);
+            this.PerformLayout();
         }
+
     }
 }
